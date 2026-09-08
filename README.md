@@ -1,99 +1,175 @@
-Pokémon Showdown
-========================================================================
+# Pokemon Showdown Docker Setup
 
-Navigation: [Website][1] | **Server repository** | [Client repository][2] | [Dex repository][3]
+This Docker setup runs the official Pokemon Showdown server on an Ubuntu base image.
 
-  [1]: http://pokemonshowdown.com/
-  [2]: https://github.com/smogon/pokemon-showdown-client
-  [3]: https://github.com/Zarel/Pokemon-Showdown-Dex
+## Prerequisites
 
-[![Build Status](https://github.com/smogon/pokemon-showdown/workflows/Node.js%20CI/badge.svg)](https://github.com/smogon/pokemon-showdown/actions?query=workflow%3A%22Node.js+CI%22)
-[![Dependency Status](https://img.shields.io/librariesio/github/smogon/pokemon-showdown)](https://libraries.io/github/smogon/pokemon-showdown)
+- Docker installed ([Install Docker](https://docs.docker.com/get-docker/))
+- Docker Compose installed ([Install Docker Compose](https://docs.docker.com/compose/install/))
+- At least 1GB of disk space
 
+## Quick Start
 
-Introduction
-------------------------------------------------------------------------
+### Option 1: Using Docker Compose (Recommended)
 
-Pokémon Showdown is many things:
+```bash
+# Build the image
+docker-compose build
 
-- A **website** you can use for Pokémon battling
+# Start the server
+docker-compose up -d
 
-  - http://pokemonshowdown.com/
+# View logs
+docker-compose logs -f
 
-- A **JavaScript library** for simulating Pokémon battles and getting Pokédex data
+# Stop the server
+docker-compose down
+```
 
-  - [sim/README.md](./sim/README.md)
+### Option 2: Using Docker Directly
 
-- Some **command-line tools** for simulating Pokémon battles (which can be used in non-JavaScript programs)
+```bash
+# Build the image
+docker build -t pokemon-showdown .
 
-  - [COMMANDLINE.md](./COMMANDLINE.md)
+# Run the container
+docker run -d \
+  --name pokemon-showdown-server \
+  -p 8000:8000 \
+  -v $(pwd)/logs:/app/logs \
+  -v $(pwd)/config:/app/config \
+  pokemon-showdown
 
-- A **web API** for the web site for Pokémon battling
+# View logs
+docker logs -f pokemon-showdown-server
 
-  - [pokemon-showdown-client: WEB-API.md](https://github.com/smogon/pokemon-showdown-client/blob/master/WEB-API.md)
+# Stop the container
+docker stop pokemon-showdown-server
+docker rm pokemon-showdown-server
+```
 
-- A **game server** for hosting your own Pokémon Showdown community and game modes
+## Configuration
 
-  - [server/README.md](./server/README.md)
+### Modifying Server Settings
 
-Pokémon Showdown simulates singles, doubles and triples battles in all the games out so far (Generations 1 through 9).
+1. After the container starts, config files will be created in `./config/`
+2. Edit `config/config.js` to customize server settings:
+   - Port number
+   - Server name
+   - Max connections
+   - Password settings
 
+3. Restart the container for changes to take effect:
+   ```bash
+   docker-compose restart
+   ```
 
-Documentation quick links
-------------------------------------------------------------------------
+### Ports
 
-* [PROTOCOL.md][4] - How the client and server communicate with each other.
-* [sim/SIM-PROTOCOL.md][5] - The part of the protocol used for battles and battle messages.
-* [CONTRIBUTING.md][6] - Useful code standards to understand if you want to send pull requests to PS (not necessary if you're just using the code and not planning to contribute back).
-* [ARCHITECTURE.md][7] - A high-level overview of how the code works.
-* [Bot FAQ][8] - An FAQ compiled by Kaiepi regarding making Pokemon Showdown bots - mainly chatbots and battle bots.
+- **Default**: 8000 (HTTP)
+- To use a different port, edit `docker-compose.yml` and change:
+  ```yaml
+  ports:
+    - "YOUR_PORT:8000"
+  ```
 
-  [4]: ./PROTOCOL.md
-  [5]: ./sim/SIM-PROTOCOL.md
-  [6]: ./CONTRIBUTING.md
-  [7]: ./ARCHITECTURE.md
-  [8]: https://gist.github.com/Kaiepi/becc5d0ecd576f5e7733b57b4e3fa97e
+## Volumes
 
+The Docker setup creates these volumes:
 
-Community
-------------------------------------------------------------------------
+- `./logs` - Server logs
+- `./config` - Configuration files
+- `./data` - Data persistence (replays, user data, etc.)
 
-PS has a built-in chat service. Join our main server to talk to us!
+## Connecting to the Server
 
-You can also visit the [Pokémon Showdown forums][9] for discussion and help.
+Once running, connect to:
+```
+http://localhost:8000
+```
 
-  [9]: https://www.smogon.com/forums/forums/pok%C3%A9mon-showdown.209/
+Or from another machine:
+```
+http://YOUR_SERVER_IP:8000
+```
 
-If you'd like to contribute to programming and don't know where to start, feel free to check out [Ideas for New Developers][10].
+## Useful Commands
 
-  [10]: https://github.com/smogon/pokemon-showdown/issues/2444
+```bash
+# View real-time logs
+docker-compose logs -f
 
+# Execute command in container
+docker-compose exec pokemon-showdown node pokemon-showdown --help
 
-License
-------------------------------------------------------------------------
+# Restart server
+docker-compose restart
 
-Pokémon Showdown's server is distributed under the terms of the [MIT License][11].
+# View container status
+docker-compose ps
 
-  [11]: ./LICENSE
+# Clean up (remove container and images)
+docker-compose down --rmi all
+```
 
+## Troubleshooting
 
-Credits
-------------------------------------------------------------------------
+### Port Already in Use
+If port 8000 is already in use:
+1. Edit `docker-compose.yml`
+2. Change the first port number in the `ports` section
+3. Rebuild and restart: `docker-compose up -d --build`
 
-Owner
+### Permission Issues
+The container runs as non-root user `showdown` for security. If you need to modify files:
+```bash
+sudo chown -R $USER:$USER ./logs ./config ./data
+```
 
-- Guangcong Luo [Zarel] - Development, Design, Sysadmin
+### Low Memory
+Increase the memory limit in `docker-compose.yml`:
+```yaml
+deploy:
+  resources:
+    limits:
+      memory: 1G
+```
 
-Staff
+### Container Won't Start
+Check logs for errors:
+```bash
+docker-compose logs pokemon-showdown
+```
 
-- Andrew Werner [HoeenHero] - Development
-- Annika L. [Annika] - Development
-- Chris Monsanto [chaos] - Development, Sysadmin
-- Kris Johnson [dhelmise] - Development
-- Leonard Craft III [DaWoblefet] - Research (game mechanics)
-- Mathieu Dias-Martins [Marty-D] - Research (game mechanics), Development
-- Mia A [Cassiopeia] - Development
+## Updates
 
-Contributors
+To update to the latest Pokemon Showdown version:
 
-- See http://pokemonshowdown.com/credits
+```bash
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+## Performance Tips
+
+1. **Use named volumes for better I/O**: Currently using bind mounts; consider Docker named volumes for high-traffic servers
+2. **Monitor resources**:
+   ```bash
+   docker stats pokemon-showdown-server
+   ```
+3. **Enable swap if needed** on your host machine
+4. **Use nginx reverse proxy** for multiple servers or load balancing
+
+## Security Notes
+
+- Container runs as non-root user
+- No default passwords set (configure in `config/config.js`)
+- Use a firewall to restrict access if needed
+- Keep Docker and images updated
+
+## Resources
+
+- [Pokemon Showdown GitHub](https://github.com/smogon/pokemon-showdown)
+- [Docker Documentation](https://docs.docker.com/)
+- [Docker Compose Documentation](https://docs.docker.com/compose/)
