@@ -827,13 +827,7 @@ export class Pokemon {
 				target = possibleTarget;
 			}
 			if (this.battle.activePerHalf > 1 && !move.tracksTarget) {
-				const isCharging = move.flags['charge'] && !this.volatiles['twoturnmove'] &&
-					!(move.id.startsWith('solarb') && ['sunnyday', 'desolateland'].includes(this.effectiveWeather(move))) &&
-					!(move.id === 'electroshot' && ['raindance', 'primordialsea'].includes(this.effectiveWeather(move))) &&
-					!(this.hasItem('powerherb') && move.id !== 'skydrop');
-				if (!isCharging) {
-					target = this.battle.priorityEvent('RedirectTarget', this, this, move, target);
-				}
+				target = this.battle.priorityEvent('RedirectTarget', this, this, move, target);
 			}
 			if (move.smartTarget) {
 				targets = this.getSmartTargets(target, move);
@@ -1004,7 +998,7 @@ export class Pokemon {
 			switch (moveSlot.id) {
 			case 'curse':
 				if (!this.hasType('Ghost')) {
-					target = this.battle.dex.moves.get('curse').nonGhostTarget;
+					target = 'self';
 				}
 				break;
 			case 'pollenpuff':
@@ -2197,8 +2191,7 @@ export class Pokemon {
 		if (!sourceEffect && this.battle.effect) sourceEffect = this.battle.effect;
 		const weather = this.battle.field.effectiveWeather();
 		if (this.battle.activePokemon?.hasAbility('megasol') && sourceEffect &&
-			(sourceEffect.id === 'megasol' || sourceEffect.effectType === 'Move' || sourceEffect.effectType === 'Weather') &&
-			sourceEffect.id !== 'electroshot') {
+			(sourceEffect.id === 'megasol' || sourceEffect.effectType === 'Move' || sourceEffect.effectType === 'Weather')) {
 			if (weather !== 'sunnyday' && message) this.battle.add('-activate', this, 'ability: Mega Sol');
 			return 'sunnyday' as ID;
 		}

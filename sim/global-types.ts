@@ -477,7 +477,9 @@ type TextFile<T> = T & {
 	gen5?: T,
 	gen6?: T,
 	gen7?: T,
+	gen7letsgo?: T,
 	gen8?: T,
+	gen8bdsp?: T,
 	champions?: T,
 };
 
@@ -619,6 +621,8 @@ declare namespace RandomTeamsTypes {
 		abilities?: string[];
 		teraTypes?: string[];
 		preferredTypes?: string[];
+		/** Allows for hardcoded items, currently only used by Pet Mods */
+		items?: string[];
 	}
 	export interface RandomSpeciesData {
 		level?: number;

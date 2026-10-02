@@ -17,6 +17,7 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 		flags: {},
 		name: "Brass Bond",
 		num: -1,
+		desc: "Parental Bond clone",
 	},
 	protean: {
 		inherit: true,
@@ -29,5 +30,14 @@ export const Abilities: import('../../../sim/dex-abilities').ModdedAbilityDataTa
 			}
 		},
 		rating: 4.5,
+	},
+	sandforce: {
+		inherit: true,
+		onStart(pokemon) {
+			if (pokemon.species.name === 'Rhyperior' || pokemon.baseSpecies.name === 'Hippowdon') {
+				this.field.setWeather('sandstorm');
+			}
+		},
+		desc: "If Sandstorm is active, this Pokemon's Ground-, Rock-, and Steel-type attacks have their power multiplied by 1.3. This Pokemon takes no damage from Sandstorm. If this Pokemon is a Rhyperior, it will summon Sandstorm on switch-in.",
 	},
 };
